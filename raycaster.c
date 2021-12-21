@@ -1,8 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <GL/glut.h>
+#include <math.h>
+#define PI 3.1415926535
 
 float px, py; // player position
+float pdx, pdy, pa; // player angle and dx, dy
 
 void drawPlayer()
 {
@@ -10,6 +13,13 @@ void drawPlayer()
 	glPointSize(8);
 	glBegin(GL_POINTS);
 	glVertex2i(px, py); 
+	glEnd();
+	
+	// draw direction we are looking
+	glLineWidth(3);
+	glBegin(GL_LINES);
+	glVertex2i(px, py);
+	glVertex2i(px + pdx*5, py + pdy*5);
 	glEnd();
 }
 
@@ -20,8 +30,8 @@ int map[]=
 	1,0,1,0,0,0,0,1,
 	1,0,1,0,0,0,0,1,
 	1,0,1,0,0,0,0,1,
-	1,0,0,0,1,0,0,1,
 	1,0,0,0,0,0,0,1,
+	1,0,0,0,0,1,0,1,
 	1,0,0,0,0,0,0,1,
 	1,1,1,1,1,1,1,1,
 };
@@ -43,11 +53,12 @@ void drawMap2D()
 			}
 			
 			xo=x*mapS; yo=y*mapS;
+			// define vertices of each box 
 			glBegin(GL_QUADS);
-			glVertex2i(xo        , yo       );
-			glVertex2i(xo        , yo + mapS);
-			glVertex2i(xo + mapS , yo + mapS);
-			glVertex2i(xo + mapS , yo);
+			glVertex2i(xo        +1, yo        +1);
+			glVertex2i(xo        +1, yo + mapS -1); // bottom left
+			glVertex2i(xo + mapS -1, yo + mapS -1);
+			glVertex2i(xo + mapS -1, yo        +1);
 			glEnd();
 		}
 	}
@@ -63,10 +74,28 @@ void display()
 
 void buttons(unsigned char key, int x, int y)
 {
-	if (key == 'a') {px -=5;}
-	if (key == 'd') {px +=5;} 
-	if (key == 'w') {py -=5;}
-	if (key == 's') {py +=5;}
+	if (key == 'a') // change what angle we are looking
+	{ 
+		pa -= 0.1; 
+		if (pa<0) 
+		{
+			pa += 2*PI;
+		}
+		pdx = cos(pa) * 5;
+		pdy = sin(pa) * 5;
+	}
+	if (key == 'd') // change angle counterclockwise
+	{
+		pa += 0.1; 
+		if (pa>2*PI) 
+		{
+			pa = 0;
+		}
+		pdx = cos(pa) * 5;
+		pdy = sin(pa) * 5;
+	} 
+	if (key == 'w') {px += pdx; py += pdy;} // move in direction
+	if (key == 's') {px -= pdx; py -= pdy;} // move counter direction
 	glutPostRedisplay();
 }
 
@@ -75,6 +104,7 @@ void init()
 	glClearColor(0.3, 0.3, 0.3, 0);
 	gluOrtho2D(0, 1024, 512, 0);
 	px=300; py=300;
+	pdx = cos(pa) * 5; pdy = sin(pa) * 5;
 }
 
 int main(int argc, char** argv)
