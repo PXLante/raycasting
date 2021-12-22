@@ -64,11 +64,70 @@ void drawMap2D()
 	}
 }
 
+void drawRays2D()
+{
+	int r,mx,my,mp,dof;
+	float rx, ry, ra, xo, yo;
+	ra = pa; //ray's angle to player's angle
+	for (r =0; r < 1; r++)
+	{
+		// Find where the ray intersects on the horizontal
+		dof = 0;
+		float arcTan = -1/tan(ra);
+		if (ra > PI) // ray's angle is down
+		{
+			ry = (((int)py>>6)<<6)-0.0001;
+			rx = (py-ry)*arcTan+px;
+			
+			// these are the offsets, i.e. how far away is the next intersection
+			yo = -64; 
+			xo = -yo * arcTan;
+		}
+		if (ra < PI) // ray's angle is up
+		{
+			ry = (((int)py>>6)<<6)+64;
+			rx = (py-ry)*arcTan+px;
+			
+			// these are the offsets, i.e. how far away is the next intersection
+			yo = 64; 
+			xo = -yo * arcTan;
+		}
+		if (ra == 0 || ra == PI) // if straight left or right, never hit horizontal wall
+		{
+			rx = px;
+			ry = py;
+			dof = 8;
+		}
+		while (dof < 8)
+		{
+			// find in map array
+			mx = (int)(rx) >> 6; // divide by 64
+			my = (int)(ry) >> 6;
+			mp = my*mapX + mx;
+			if (mp < mapX*mapY && map[mp] == 1) { dof=8; } // hit wall
+			else 
+			{
+				rx += xo;
+				ry += yo;
+				dof += 1; 
+			}
+			
+		}
+		glColor3f(0,1,0);
+		glLineWidth(1);
+		glBegin(GL_LINES);
+		glVertex2i(px,py);
+		glVertex2i(rx,ry);
+		glEnd();
+	}
+}
+
 void display()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	drawMap2D();
 	drawPlayer();
+	drawRays2D();
 	glutSwapBuffers();
 }
 
