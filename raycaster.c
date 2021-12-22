@@ -3,6 +3,8 @@
 #include <GL/glut.h>
 #include <math.h>
 #define PI 3.1415926535
+#define P2 PI/2
+#define P3 3*PI/2
 
 float px, py; // player position
 float pdx, pdy, pa; // player angle and dx, dy
@@ -64,6 +66,11 @@ void drawMap2D()
 	}
 }
 
+float dist(float ax, float ay, float bx, float by, float ang)
+{
+	return ( sqrt((bx-ax)* (bx-ax) + (by-ay)*(by-ay)) ); // pytahgorean
+}
+
 void drawRays2D()
 {
 	int r,mx,my,mp,dof;
@@ -73,6 +80,7 @@ void drawRays2D()
 	{
 		// Find where the ray intersects on the horizontal
 		dof = 0;
+		float disH = 100000000, hx = px, hy = py;
 		float arcTan = -1/tan(ra);
 		if (ra > PI) // ray's angle is down
 		{
@@ -104,7 +112,13 @@ void drawRays2D()
 			mx = (int)(rx) >> 6; // divide by 64
 			my = (int)(ry) >> 6;
 			mp = my*mapX + mx;
-			if (mp < mapX*mapY && map[mp] == 1) { dof=8; } // hit wall
+			if (mp > 0 && mp < mapX*mapY && map[mp] == 1) // hit wall
+			{ 
+				hx = rx;
+				hy = ry;
+				disH = dist(px, py, hx, hy, ra);
+				dof=8; 
+			} 
 			else 
 			{
 				rx += xo;
@@ -113,7 +127,61 @@ void drawRays2D()
 			}
 			
 		}
-		glColor3f(0,1,0);
+		
+		// Find where the ray intersects on the vertical
+		dof = 0;
+		float disV = 10000000, vx = px, vy = py;
+		float nTan = -tan(ra);
+		if (ra > P2 && ra < P3) // ray's angle is left
+		{
+			rx = (((int)px>>6)<<6)-0.0001;
+			ry = (px-rx)*nTan+py;
+			
+			// these are the offsets, i.e. how far away is the next intersection
+			xo = -64; 
+			yo = -xo * nTan;
+		}
+		if (ra < P2 || ra > P3) // ray's angle is right
+		{
+			rx = (((int)px>>6)<<6)+64;
+			ry = (px-rx)*nTan+py;
+			
+			// these are the offsets, i.e. how far away is the next intersection
+			xo = 64; 
+			yo = -xo * nTan;
+		}
+		if (ra == 0 || ra == PI) // if straight up or down, never hit horizontal wall
+		{
+			rx = px;
+			ry = py;
+			dof = 8;
+		}
+		while (dof < 8)
+		{
+			// find in map array
+			mx = (int)(rx) >> 6; // divide by 64
+			my = (int)(ry) >> 6;
+			mp = my*mapX + mx;
+			if (mp > 0 && mp < mapX*mapY && map[mp] == 1) // hit wall
+			{ 
+				vx = rx;
+				vy = ry; 
+				disV = dist(px, py, vx, vy, ra);
+				dof=8; 
+			} 
+			else 
+			{
+				rx += xo;
+				ry += yo;
+				dof += 1; 
+			}
+			
+		}
+		
+		if (disV<disH){rx = vx; ry = vy;}
+		else {rx = hx; ry = hy;}
+		
+		glColor3f(1,0,0);
 		glLineWidth(1);
 		glBegin(GL_LINES);
 		glVertex2i(px,py);
