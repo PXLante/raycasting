@@ -5,11 +5,14 @@ This project was ran using the DevC++ IDE. Additional configuration is required 
 
 http://chortle.ccsu.edu/Bloodshed/glutming.zip
 
-Put glut.h in        Dev-Cpp\MinGW32\include\GL
-Put libglut32.a in   Dev-Cpp\MinGW32\lib
+Put glut.h in        Dev-Cpp\MinGW32\include\GL  
+Put libglut32.a in   Dev-Cpp\MinGW32\lib  
 Put glut32.dll in    C:\\Windows\SysWOW64
 
 # to run
 The main file is raycaster.c
 
 Compile and run to see the raycasting work.
+
+
+
