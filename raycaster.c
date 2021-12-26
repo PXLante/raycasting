@@ -5,6 +5,7 @@
 #define PI 3.1415926535
 #define P2 PI/2
 #define P3 3*PI/2
+#define DR 0.0174533 // one degree in radians
 
 float px, py; // player position
 float pdx, pdy, pa; // player angle and dx, dy
@@ -74,9 +75,10 @@ float dist(float ax, float ay, float bx, float by, float ang)
 void drawRays2D()
 {
 	int r,mx,my,mp,dof;
-	float rx, ry, ra, xo, yo;
-	ra = pa; //ray's angle to player's angle
-	for (r =0; r < 1; r++)
+	float rx, ry, ra, xo, yo, disL;
+	ra = pa-DR*30; //ray's angle to player's angle
+	if (ra < 0) { ra += 2*PI;} if (ra > 2*PI) { ra -= 2*PI;}
+	for (r =0; r < 60; r++)
 	{
 		// Find where the ray intersects on the horizontal
 		dof = 0;
@@ -90,7 +92,7 @@ void drawRays2D()
 			// these are the offsets, i.e. how far away is the next intersection
 			yo = -64; 
 			xo = -yo * arcTan;
-		}
+		} 
 		if (ra < PI) // ray's angle is up
 		{
 			ry = (((int)py>>6)<<6)+64;
@@ -178,15 +180,29 @@ void drawRays2D()
 			
 		}
 		
-		if (disV<disH){rx = vx; ry = vy;}
-		else {rx = hx; ry = hy;}
+		if (disV<disH){rx = vx; ry = vy; disL = disV; glColor3f(.07,.7,.1);}
+		else {rx = hx; ry = hy; disL = disH; glColor3f(.8,.7,.1);}
 		
-		glColor3f(1,0,0);
 		glLineWidth(1);
 		glBegin(GL_LINES);
 		glVertex2i(px,py);
 		glVertex2i(rx,ry);
 		glEnd();
+		
+		// draw 3D Walls
+		// fix the fisheye effect
+		float ca = pa-ra; if (ca<0) { ca += 2*PI; } if (ca> 2*PI) { ca -= 2*PI; }
+		disL = disL*cos(ca);
+		
+		
+		float lineH = (mapS*320)/disL;                       // line height
+		if (lineH > 320) { lineH = 300;}
+		
+		float lineO=160-lineH/2;                             // line offset
+		glLineWidth(8); glBegin(GL_LINES); glVertex2i(r*8+530, lineO); glVertex2i(r*8+530, lineH + lineO); glEnd();
+		
+		ra += DR;
+		if (ra < 0) { ra += 2*PI;} if (ra > 2*PI) { ra -= 2*PI;}
 	}
 }
 
