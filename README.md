@@ -1,7 +1,7 @@
-# RayTracing
+# RayCaster
 
 ## Background
-This project was to set up a DOOM-like raytracing engine with simple collisions. I wanted to set this up to get some practice with my C and math chops, and I turned out quite happy with the end result. 
+This project was to set up a DOOM-like raycasting engine with simple collisions. I wanted to set this up to get some practice with my C and math chops, and I turned out quite happy with the end result. 
 
 
 ## setup
